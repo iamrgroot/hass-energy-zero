@@ -1,4 +1,4 @@
-"""ENTSO-e current electricity and gas price information service."""
+"""Energy Zero price information service."""
 from __future__ import annotations
 
 from datetime import timedelta
@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import utcnow
 
 from .coordinator import EnergyZeroCoordinator
-from .const import ATTRIBUTION, CONF_COORDINATOR, DOMAIN, EnergyZeroEntityDescription, EntsoeEntityDescription, ICON, SENSOR_TYPES
+from .const import ATTRIBUTION, CONF_COORDINATOR, DOMAIN, EnergyZeroEntityDescription, ICON, SENSOR_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,10 +38,10 @@ class EnergyZeroSensor(CoordinatorEntity, SensorEntity):
     _attr_attribution = ATTRIBUTION
     _attr_icon = ICON
 
-    def __init__(self, coordinator: EnergyZeroCoordinator, description: EntsoeEntityDescription) -> None:
+    def __init__(self, coordinator: EnergyZeroCoordinator, description: EnergyZeroEntityDescription) -> None:
         """Initialize the sensor."""
         self.entity_description: EnergyZeroEntityDescription = description
-        self._attr_unique_id = f"entsoe.{description.key}"
+        self._attr_unique_id = f"energy_zero_gas_prices.{description.key}"
 
         self._update_job = HassJob(self.async_schedule_update_ha_state)
         self._unsub_update = None

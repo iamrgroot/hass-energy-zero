@@ -13,6 +13,9 @@ from homeassistant.helpers.typing import StateType
 
 DOMAIN = "energy_zero_gas_prices"
 
+CONF_COORDINATOR = "coordinator"
+CONF_MODIFYER = "modifyer"
+
 BASE_API_URL = 'https://api.energyzero.nl/v1/energyprices'
 UPDATE_INTERVAL = timedelta(hours=1)
 
