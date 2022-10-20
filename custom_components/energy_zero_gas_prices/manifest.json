@@ -1,0 +1,11 @@
+{
+  "codeowners": ["@IAmRGroot"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/IAmRGroot/hass-energy-zero",
+  "domain": "energy_zero_gas_prices",
+  "iot_class": "cloud_polling",
+  "name": "Energy Zero gas prices",
+  "requirements": [],
+  "version": "1.0.0"
+}

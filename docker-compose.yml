@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  python:
+    image: python:3
+    command: tail -f /dev/null
+    volumes:
+      - type: bind
+        source: ./
+        target: /app
