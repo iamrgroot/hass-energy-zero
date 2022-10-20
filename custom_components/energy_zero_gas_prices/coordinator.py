@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Literal
 import pandas as pd
 import logging
@@ -54,11 +54,11 @@ class EnergyZeroCoordinator(DataUpdateCoordinator):
         # Used to inject the current hour.
         # so template can be simplified using now
         if no_template:
-            price = round(value / 1000, 5)
+            price = round(value, 5)
             return price
 
         else:
-            price = value / 1000
+            price = value
             if fake_dt is not None:
 
                 def faker():
@@ -115,7 +115,7 @@ class EnergyZeroCoordinator(DataUpdateCoordinator):
         except (asyncio.TimeoutError, KeyError) as error:
             raise UpdateFailed(f"Fetching energy price data failed: {error}") from error
 
-    def api_update(self, start_date: pd.Timestamp, end_date: pd.Timestamp):
+    def api_update(self, start_date: pd.Timestamp, end_date: pd.Timestamp) -> pd.Series:
         headers = {
             'authority': 'api.energyzero.nl',
             'accept': '*/*',
@@ -133,27 +133,35 @@ class EnergyZeroCoordinator(DataUpdateCoordinator):
         }
 
         params = {
-            'fromDate': start_date.isoformat(timespec='seconds') + 'Z',
-            'tillDate': end_date.isoformat(timespec='seconds') + 'Z',
+            'fromDate': start_date.astimezone(timezone.utc).isoformat(timespec='seconds').replace('+00:00','Z'),
+            'tillDate': end_date.astimezone(timezone.utc).isoformat(timespec='seconds').replace('+00:00','Z'),
             'interval': '4',
             'usageType': '3',
             'inclBtw': 'true',
         }
 
-        return requests.get(BASE_API_URL, params=params, headers=headers)
+        response = requests.get(BASE_API_URL, params=params, headers=headers)
+
+        data = response.json()
+
+        series = pd.Series(dtype='float64')
+        for price in data["Prices"]:
+            series[dt.parse_datetime(price["readingDate"])] = price['price']
+
+        return series
 
     def processed_data(self):
         return {
-            "current_price": self.get_current_hourprice(self.data["Prices"]),
-            # "next_hour_price": self.get_next_hourprice(self.data["data"]),
-            # "min_price": self.get_min_price(self.data["dataToday"]),
-            # "max_price": self.get_max_price(self.data["dataToday"]),
-            # "avg_price": self.get_avg_price(self.data["dataToday"]),
-            # "time_min": self.get_min_time(self.data["dataToday"]),
-            # "time_max": self.get_max_time(self.data["dataToday"]),
-            # "prices_today": self.get_timestamped_prices(self.data["dataToday"]),
-            # "prices_tomorrow": self.get_timestamped_prices(self.data["dataTomorrow"]),
-            # "prices": self.get_timestamped_prices(self.data["data"]),
+            "current_price": self.get_current_hourprice(self.data["data"]),
+            "next_hour_price": self.get_next_hourprice(self.data["data"]),
+            "min_price": self.get_min_price(self.data["dataToday"]),
+            "max_price": self.get_max_price(self.data["dataToday"]),
+            "avg_price": self.get_avg_price(self.data["dataToday"]),
+            "time_min": self.get_min_time(self.data["dataToday"]),
+            "time_max": self.get_max_time(self.data["dataToday"]),
+            "prices_today": self.get_timestamped_prices(self.data["dataToday"]),
+            "prices_tomorrow": self.get_timestamped_prices(self.data["dataTomorrow"]),
+            "prices": self.get_timestamped_prices(self.data["data"]),
         }
 
     def get_next_hourprice(self, hourprices) -> int:

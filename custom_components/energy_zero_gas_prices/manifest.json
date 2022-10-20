@@ -1,6 +1,6 @@
 {
   "codeowners": ["@IAmRGroot"],
-  "config_flow": false,
+  "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/IAmRGroot/hass-energy-zero",
   "domain": "energy_zero_gas_prices",
