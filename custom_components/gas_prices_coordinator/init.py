@@ -16,7 +16,7 @@ async def setup_entry(hass: HomeAssistant, entry: ConfigEntry, domain: str, coor
     # Fetch initial data, so we have data when entities subscribe and set up the platform
     await coordinator.async_config_entry_first_refresh()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    entry.async_on_unload(entry.add_update_listener(async_update_options))
+    entry.async_on_unload(entry.add_update_listener(update_options))
 
     return True
 
